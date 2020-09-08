@@ -7,6 +7,17 @@ import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
 from xception import xception
+import time
+
+def process(img):
+    img = cv2.resize(img, (480, 480))
+    img = img/255.0
+    img = img - np.array([0.485, 0.456, 0.406])
+    img = img/np.array([0.229, 0.224, 0.225])   # (shape: (256, 256, 3))
+    img = img.astype(np.float32)
+    img = torch.from_numpy(img)
+    return img
+
 
 loser = nn.MSELoss()
 use_cuda = torch.cuda.is_available()
@@ -16,34 +27,31 @@ m = xception(device=device).to(device)
 m.train()
 optimizer = optim.Adadelta(m.parameters(), lr=0.1)
 
-pre_sped = torch.tensor([[0.0]]).to(device)
-
 epochs = 200
+
+start = time.time()
 
 for e in range(epochs):
     vidcap = cv2.VideoCapture('/home/nick/projects/comma/speedchallenge/data/train.mp4')
     f = open("/home/nick/projects/comma/speedchallenge/data/train.txt", "r")
     success, prev_img = vidcap.read()
+    speed = float(f.readline())
     count = 0
     running_loss = 0.0
-    for i in range(1, 20400):
+    while success:
         success, image = vidcap.read()
         if success:
             loss = None
-            diff = image - prev_img
-            diff = cv2.resize(diff, (400, 400))
-            # diff = cv2.resize(diff, (299, 299))
-            diff = diff/255.0
-            diff = diff - np.array([0.485, 0.456, 0.406])
-            diff = diff/np.array([0.229, 0.224, 0.225])   # (shape: (256, 256, 3))
-            diff = diff.astype(np.float32)
-            diff = torch.from_numpy(diff).unsqueeze(0)
-            diff = np.transpose(diff, (0, 3, 1, 2)).to(device)
+            
+            # torch.tensor([[0.0]]).to(device)
+            dat = torch.cat((process(image), process(prev_img)), dim=2).unsqueeze(0)
+            # print(dat.size())
+            dat = np.transpose(dat, (0, 3, 1, 2)).to(device)
             speed = float(f.readline())
             speed = torch.tensor([speed]).to(device)
 
             # Do an infrence to get speed
-            output = m(diff, pre_sped)
+            output = m(dat)
 
             # sanity check, may have to change for bugatti
             if output.data >= 300 or output.data <= -75:
@@ -59,25 +67,29 @@ for e in range(epochs):
             # print(loss)
 
             optimizer.zero_grad()
-            if i == 1:
-                loss.backward(retain_graph=True)
-            else:
-                loss.backward()
-            # loss.backward()
+            loss.backward()
             optimizer.step()
             running_loss += float(loss.item())
 
             count += 1
             prev_img = image
-            pre_sped.data = output.data
+
+            
 
             if count%100 == 0:
-                print(running_loss)
+                d = time.time() - start
+                fps = 100/d
+                time_left = ((20400-count)/fps)/60
+                print(running_loss, "epoch loss\n", time_left, "min left\n", fps, "frames per second")
                 print(100 * (count/20400), "%")
+                print('==============================================================')
+                start = time.time()
         else:
             print("getting out of here")
 
-    torch.save(m, str(e) + "two.pth")
+    print("=====================saving===================")
+    torch.save(m, str(e) + "_xnet_6d.pth")
     f.close()
+    vidcap.release()
 
 
