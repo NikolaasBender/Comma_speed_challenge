@@ -3,3 +3,4 @@ speedchallenge/*
 *.pyc
 *.pth
 blah.ipynb
+data/
