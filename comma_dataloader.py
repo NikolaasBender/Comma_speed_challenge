@@ -64,7 +64,7 @@ def process(img):
     return img
 
 
-def get_random_crop(image1, image2, crop_height, crop_width):
+def getRandomCrop(image1, image2, crop_height, crop_width):
 
     max_x = image1.shape[1] - crop_width
     max_y = image1.shape[0] - crop_height
@@ -79,6 +79,16 @@ def get_random_crop(image1, image2, crop_height, crop_width):
     return crop1, crop2
 
 
+def randomRotate(img1, img2):
+    h, w, c = img1.shape
+    r = random.randint(0, 360)
+    M = cv2.getRotationMatrix2D((w/2, h/2), r, 1)
+    dst1 = cv2.warpAffine(img1, M, (w, h))
+    dst2 = cv2.warpAffine(img2, M, (w, h))
+
+    return dst1, dst2
+
+
 def colorJitter(img1, img2):
     h, w, c = img1.shape
     noise = np.random.randint(0, 50, (h, w))  # design jitter/noise here
@@ -90,10 +100,10 @@ def colorJitter(img1, img2):
 
 
 def dataGoBrrrr(extra,
-                txt_path="/home/nick/projects/comma/speedchallenge/data/train.txt",
-                vid_path="/home/nick/projects/comma/speedchallenge/data/train.mp4",
-                img_folder="/home/nick/projects/comma/data/images/",
-                csv="/home/nick/projects/comma/data/im_im_sp.csv"):
+                txt_path="speedchallenge/data/train.txt",
+                vid_path="speedchallenge/data/train.mp4",
+                img_folder="data/images/",
+                csv="data/im_im_sp.csv"):
     vidcap = cv2.VideoCapture(vid_path)
     f = open(txt_path, "r")
     success, prev_img = vidcap.read()
@@ -107,12 +117,12 @@ def dataGoBrrrr(extra,
             speed = float(f.readline())
             writeData(speed, prev_img, image)
 
-            if speed <= 5:
+            if speed <= 3.0:
                 # extra_const = extra
                 extra = extra * 3
 
             for i in range(extra):
-                e = random.randint(0, 2)
+                e = random.randint(0, 3)
                 img1 = None
                 img2 = None
                 if e == 0:
@@ -121,11 +131,13 @@ def dataGoBrrrr(extra,
                     img2 = cv2.flip(image, 1)
                 elif e == 1:
                     # print("random crop")
-                    img1, img2 = get_random_crop(prev_img, image, 240, 240)
+                    img1, img2 = getRandomCrop(prev_img, image, 240, 240)
                 elif e == 2:
                     # print("noise")
                     img1, img2 = colorJitter(prev_img, image)
+                elif e == 3:
+                    img1, img2 = randomRotate(prev_img, image)
                 writeData(speed, img1, img2)
 
 
-dataGoBrrrr(15)
+dataGoBrrrr(20)

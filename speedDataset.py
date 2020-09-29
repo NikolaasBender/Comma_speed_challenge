@@ -15,7 +15,7 @@ class ImageToSpeedDataset(Dataset):
 
     def __init__(self, csv, root_dir, transform=None):
         self.data = pd.read_csv(csv)
-        print(type(self.data))
+        print(len(self.data), " bits of data")
         self.root_dir = root_dir
         self.transform = transform
 
