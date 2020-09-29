@@ -90,10 +90,10 @@ def colorJitter(img1, img2):
 
 
 def dataGoBrrrr(extra,
-                txt_path="/home/nick/projects/comma/speedchallenge/data/train.txt",
-                vid_path="/home/nick/projects/comma/speedchallenge/data/train.mp4",
-                img_folder="/home/nick/projects/comma/data/images/",
-                csv="/home/nick/projects/comma/data/im_im_sp.csv"):
+                txt_path="speedchallenge/data/train.txt",
+                vid_path="speedchallenge/data/train.mp4",
+                img_folder="data/images/",
+                csv="data/im_im_sp.csv"):
     vidcap = cv2.VideoCapture(vid_path)
     f = open(txt_path, "r")
     success, prev_img = vidcap.read()
@@ -128,4 +128,4 @@ def dataGoBrrrr(extra,
                 writeData(speed, img1, img2)
 
 
-dataGoBrrrr(15)
+dataGoBrrrr(20)
