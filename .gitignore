@@ -4,3 +4,4 @@ speedchallenge/*
 *.pth
 blah.ipynb
 data/
+.ipynb_checkpoints*

@@ -55,9 +55,6 @@ while success:
     # output = m(data['img1'], data['img2'])
     output = m(img1, img2)
 
-    # Do an infrence to get speed
-    output = m(img1, img2)
-
     # sanity check, may have to change for bugatti
     if output.data >= 300 or output.data <= -75:
         print("weird error", i, e)
