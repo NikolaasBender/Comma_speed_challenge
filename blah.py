@@ -28,7 +28,6 @@ m.train()
 optimizer = optim.Adadelta(m.parameters(), lr=0.1)
 
 epochs = 200
-
 start = time.time()
 
 for e in range(epochs):

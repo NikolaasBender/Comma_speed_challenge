@@ -1,7 +1,9 @@
 *.vscode/*
 speedchallenge/*
 *.pyc
+*.pt
 *.pth
 blah.ipynb
 data/
 .ipynb_checkpoints*
+__pycache__*

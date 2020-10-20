@@ -155,7 +155,8 @@ class Xception(nn.Module):
 
 
 
-    def forward(self, x):
+    def forward(self, x1, x2):
+        x = torch.cat((x1, x2), 1)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
