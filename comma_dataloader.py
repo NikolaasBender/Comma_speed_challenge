@@ -144,6 +144,7 @@ def dataGoBrrrr(extra,
     vidcap = cv2.VideoCapture(vid_path)
     f = open(txt_path, "r")
     success, prev_img = vidcap.read()
+    speed = float(f.readline())
     # current_batch = []
     c = 0
     extra_const = extra

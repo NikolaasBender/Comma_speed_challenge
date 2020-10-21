@@ -60,22 +60,29 @@ class ImageToSpeedDataset(Dataset):
         return sample
 
     def validate(self,
-                 model,
+                 m,
                  loser,
                  txt_path="speedchallenge/data/train.txt",
                  vid_path="speedchallenge/data/train.mp4"):
-        model.eval()
+        # print("in val")
         vidcap = cv2.VideoCapture(vid_path)
+        # print('opened video capture')
         f = open(txt_path, "r")
+        # print('opened text')
         success, prev_img = vidcap.read()
+        speed = float(f.readline())
         loss = 0.0
+        # print('in validate')
         while success:
-            extra = extra_const
             success, image = vidcap.read()
             if success:
+                    # print("validating")
                 speed = float(f.readline())
-                out = model(prev_img, image)
-                loss += loser(out.squeeze(), data["speed"].cuda().float())
+                speed = torch.tensor([speed]).cuda()
+                # print(speed)
+                out = m(torch.transpose(self.process(prev_img), 3, 1).cuda().float(), torch.transpose(self.process(image), 3, 1).cuda().float())
+                # print(out)
+                loss += loser(out.squeeze(), speed).item()
 
         return loss
 
@@ -112,3 +119,14 @@ class ImageToSpeedDataset(Dataset):
         noise_added1 = cv2.add(img1, zitter)
         noise_added2 = cv2.add(img2, zitter)
         return noise_added1, noise_added2
+
+
+    def process(self, img):
+        img = cv2.resize(img, (240, 240))
+        img = img/255.0
+        img = img - np.array([0.485, 0.456, 0.406])
+        img = img/np.array([0.229, 0.224, 0.225])   # (shape: (256, 256, 3))
+        img = img.astype(np.float32)
+        img = torch.from_numpy(img)
+        img = img.unsqueeze(0)
+        return img

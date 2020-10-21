@@ -19,6 +19,9 @@ import xception
 
 BATCH_SIZE = 30
 
+txt_path="speedchallenge/data/train.txt"
+vid_path="speedchallenge/data/train.mp4"
+
 
 data_transform = transforms.Compose([
     transforms.ToTensor(),
@@ -105,7 +108,9 @@ for e in range(0, epochs):
         print("error saving all of the information")
 
     try:
-        error_in_val = speedDataset.validate(m, loser)
+        m.eval()
+        error_in_val = speed_dataset.validate(m, loser)
+        m.train()
         eval_history.append(error_in_val)
         print('validation:', error_in_val)
     except:
