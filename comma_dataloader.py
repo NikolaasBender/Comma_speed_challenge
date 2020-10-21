@@ -119,7 +119,7 @@ def dataGoBrrrr(extra,
 
             if speed <= 3.0:
                 # extra_const = extra
-                extra = extra * 3
+                extra = extra * 5
 
             for i in range(extra):
                 e = random.randint(0, 3)
@@ -140,4 +140,4 @@ def dataGoBrrrr(extra,
                 writeData(speed, img1, img2)
 
 
-dataGoBrrrr(20)
+dataGoBrrrr(30)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# 125518
 # Prepare the data
 import numpy as np
 import cv2
@@ -11,13 +11,9 @@ import torch.nn as nn
 import resnet_builds
 from torchvision import transforms, datasets
 import speedDataset
-import logger
-import pathlib
-import xception
+import os
 
-# PID 579031
-
-BATCH_SIZE = 250
+BATCH_SIZE = 100
 
 
 data_transform = transforms.Compose([
@@ -36,21 +32,21 @@ use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 print(device)
 
-m = xception.xception(pretrained=False, device=device)
-optimizer = optim.Adadelta(m.parameters(), lr=1.0)
-
+m = resnet_builds.resnet152()
 if torch.cuda.device_count() > 1:
     print("Let's use", torch.cuda.device_count(), "GPUs!")
+    # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
     m = nn.DataParallel(m)
 m.to(device)
 m.train()
 
+optimizer = optim.Adadelta(m.parameters(), lr=1.2)
+
 epochs = 200
 print("ready to train")
 
-loss_history = []
-
 start = time.time()
+
 for e in range(0, epochs):
     print(e)
     count = 0
@@ -60,9 +56,13 @@ for e in range(0, epochs):
         img1 = torch.transpose(data['img1'], 3, 1).cuda().float()
         img2 = torch.transpose(data['img2'], 3, 1).cuda().float()
         # print(data['img1'].shape)
-        
+        # output = m(data['img1'], data['img2'])
         output = m(img1, img2)
-        
+        # sanity check, may have to change for bugatti
+        # if output.data >= 300 or output.data <= -75:
+        #     print("weird error", i, e)
+        #     # output.data = pre_sped.data
+        #     exit()
         loss = loser(output.squeeze(), data["speed"].cuda().float())
         optimizer.zero_grad()
         loss.backward()
@@ -70,9 +70,9 @@ for e in range(0, epochs):
         running_loss += float(loss.item())
 
         count += 1
-        if count % 1000 == 0:
+        if count % 100 == 0:
             d = time.time() - start
-            fps = (1000 * BATCH_SIZE)/d
+            fps = (100 * BATCH_SIZE)/d
             time_left = ((len(speed_dataset) - (count * BATCH_SIZE))/fps)/60
             print(running_loss, "epoch loss\n",
                   d/60, "min since last update\n",
@@ -81,24 +81,18 @@ for e in range(0, epochs):
                   100 * (count/(len(speed_dataset)//BATCH_SIZE)), "%")
             print('==============================================================')
             start = time.time()
-        
 
     print("=====================saving===================")
-    torch.save(m, str(e) + "_x_net.pth")
-    loss_history.append(running_loss)
-    print(loss_history)
+    torch.save(m, str(e) + "_sai_net.pth")
     try:
-        print('saving stuff')
-        file_to_rem = pathlib.Path("full_data.pt")
-        file_to_rem.unlink()
-        print('removed file')
+        os.remove("sai_full_data.pt")
+
         chpk = {'epoch_loss': running_loss,
                 'epoch': e,
                 'model': m,
                 'optimizer': optimizer
                 }
 
-        torch.save(chpk, "full_data.pt")
-        print('saved checkpoint')
+        torch.save(chpk, "sai_full_data.pt")
     except:
         print("error saving all of the information")
