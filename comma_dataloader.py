@@ -13,7 +13,7 @@ import cv2
 import random
 import sys
 import time
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Manager, Lock
 
 # Ignore warnings
 import warnings
@@ -23,12 +23,12 @@ warnings.filterwarnings("ignore")
 csv_file = 'data/im_im_sp.csv'
 
 
-def writeData(speed, img1, img2):
+def writeData(speed, img1, img2, l):
     err = False
     try:
-        img1_name = str(time.time()) + ".jpg"
+        img1_name = str(time.time() * random.random()) + ".jpg"
         # print("hashed 1")
-        img2_name = str(time.time()) + ".jpg"
+        img2_name = str(time.time() * random.random()) + ".jpg"
         # print("hashed 2")
     except:
         err = True
@@ -44,7 +44,7 @@ def writeData(speed, img1, img2):
         err = True
         print("failed to write images")
         exit()
-
+    l.acquire()
     try:
         if err == False:
             with open(csv_file, '+a') as csvfile:
@@ -54,7 +54,7 @@ def writeData(speed, img1, img2):
     except:
         print("error writing the csv")
         exit()
-
+    l.release()
 
 def process(img):
     img = cv2.resize(img, (240, 240))
@@ -100,37 +100,40 @@ def colorJitter(img1, img2):
     return noise_added1, noise_added2
 
 
-def smashData(speed, prev_img, image):
-    e = random.randint(0, 7)
-    img1 = None
-    img2 = None
-    if e == 0:
-        # print("flip")
-        img1 = cv2.flip(prev_img, 1)
-        img2 = cv2.flip(image, 1)
-    elif e == 1:
-        # print("random crop")
-        img1, img2 = getRandomCrop(prev_img, image, 240, 240)
-    elif e == 2:
-        # print("noise")
-        img1, img2 = colorJitter(prev_img, image)
-    elif e == 3:
-        img1, img2 = randomRotate(prev_img, image)
-    elif e == 4:
-        img1, img2 = colorJitter(prev_img, image)
-        img1, img2 = randomRotate(img1, img2)
-    elif e == 5:
-        img1, img2 = getRandomCrop(prev_img, image, 240, 240)
-        img1, img2 = randomRotate(img1, img2)
-    elif e == 6:
-        img1, img2 = colorJitter(prev_img, image)
-        img1, img2 = getRandomCrop(img1, img2, 240, 240)
-    elif e == 7:
-        img1, img2 = colorJitter(prev_img, image)
-        img1, img2 = getRandomCrop(img1, img2, 240, 240)
-        img1, img2 = randomRotate(img1, img2)
+def smashData(speed, prev_img, image, l):
+    e = random.randint(1, 7)
+    randomlist = []
+    for i in range(0, e):
+        n = random.randint(0,3)
+        randomlist.append(n)
+    for r in randomlist:
+        if r == 0:
+            # print("flip")
+            prev_img = cv2.flip(prev_img, 1)
+            image = cv2.flip(image, 1)
+        elif r == 1:
+            # print("random crop")
+            prev_img, image = getRandomCrop(prev_img, image, 240, 240)
+        elif r == 2:
+            # print("noise")
+            prev_img, image = colorJitter(prev_img, image)
+        elif r == 3:
+            prev_img, image = randomRotate(prev_img, image)
+        # elif e == 4:
+        #     img1, img2 = colorJitter(prev_img, image)
+        #     img1, img2 = randomRotate(img1, img2)
+        # elif e == 5:
+        #     img1, img2 = getRandomCrop(prev_img, image, 240, 240)
+        #     img1, img2 = randomRotate(img1, img2)
+        # elif e == 6:
+        #     img1, img2 = colorJitter(prev_img, image)
+        #     img1, img2 = getRandomCrop(img1, img2, 240, 240)
+        # elif e == 7:
+        #     img1, img2 = colorJitter(prev_img, image)
+        #     img1, img2 = getRandomCrop(img1, img2, 240, 240)
+        #     img1, img2 = randomRotate(img1, img2)
         
-    writeData(speed, img1, img2)
+    writeData(speed, prev_img, image, l)
 
 
 def dataGoBrrrr(extra,
@@ -144,26 +147,28 @@ def dataGoBrrrr(extra,
     # current_batch = []
     c = 0
     extra_const = extra
+    lock = Lock()
     while success:
         extra = extra_const
         success, image = vidcap.read()
         if success:
             speed = float(f.readline())
-            writeData(speed, prev_img, image)
+            writeData(speed, prev_img, image, lock)
 
-            if speed <= 3.0:
-                # extra_const = extra
-                extra = extra * 5
+            # if speed <= 3.0:
+            #     # extra_const = extra
+            #     extra = extra * 5
 
-            procs = []
-            for i in range(extra):
-                p = Process(target=smashData, args=(speed, prev_img, image))
-                p.start()
-                procs.append()
+            # procs = []
+            # for i in range(extra):
+            #     p = Process(target=smashData, args=(speed, prev_img, image, lock))
+            #     p.start()
+            #     procs.append(p)
 
-            for p in procs:
-                p.join()
+            # for p in procs:
+            #     p.join()
                 
 
-
+start = time.time()
 dataGoBrrrr(30)
+print((time.time() - start)/60)

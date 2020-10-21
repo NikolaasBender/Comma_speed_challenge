@@ -15,9 +15,9 @@ import logger
 import pathlib
 import xception
 
-# PID 579031
+# PID 
 
-BATCH_SIZE = 250
+BATCH_SIZE = 30
 
 
 data_transform = transforms.Compose([
@@ -71,9 +71,9 @@ for e in range(0, epochs):
         running_loss += float(loss.item())
 
         count += 1
-        if count % 1000 == 0:
+        if count % 100 == 0:
             d = time.time() - start
-            fps = (1000 * BATCH_SIZE)/d
+            fps = (100 * BATCH_SIZE)/d
             time_left = ((len(speed_dataset) - (count * BATCH_SIZE))/fps)/60
             print(running_loss, "epoch loss\n",
                   d/60, "min since last update\n",
@@ -105,7 +105,7 @@ for e in range(0, epochs):
         print("error saving all of the information")
 
     try:
-        error_in_val = speedDataset.validate(m)
+        error_in_val = speedDataset.validate(m, loser)
         eval_history.append(error_in_val)
         print('validation:', error_in_val)
     except:
