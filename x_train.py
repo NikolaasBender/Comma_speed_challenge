@@ -49,6 +49,7 @@ epochs = 200
 print("ready to train")
 
 loss_history = []
+eval_history = []
 
 start = time.time()
 for e in range(0, epochs):
@@ -102,3 +103,11 @@ for e in range(0, epochs):
         print('saved checkpoint')
     except:
         print("error saving all of the information")
+
+    try:
+        error_in_val = speedDataset.validate(m)
+        eval_history.append(error_in_val)
+        print('validation:', error_in_val)
+    except:
+        print('error in validation')
+        eval_history.append(None)

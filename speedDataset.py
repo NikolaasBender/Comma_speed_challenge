@@ -35,3 +35,21 @@ class ImageToSpeedDataset(Dataset):
 
         return sample
 
+    def validate(self,
+                 model,
+                 txt_path="speedchallenge/data/train.txt",
+                 vid_path="speedchallenge/data/train.mp4"):
+        model.eval()
+        vidcap = cv2.VideoCapture(vid_path)
+        f = open(txt_path, "r")
+        success, prev_img = vidcap.read()
+        loss = 0.0
+        while success:
+            extra = extra_const
+            success, image = vidcap.read()
+            if success:
+                speed = float(f.readline())
+                out = model(prev_img, image)
+                loss += loser(out.squeeze(), data["speed"].cuda().float())
+
+        return loss

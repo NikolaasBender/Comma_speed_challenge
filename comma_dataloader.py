@@ -13,6 +13,7 @@ import cv2
 import random
 import sys
 import time
+from multiprocessing import Process, Manager
 
 # Ignore warnings
 import warnings
@@ -99,6 +100,39 @@ def colorJitter(img1, img2):
     return noise_added1, noise_added2
 
 
+def smashData(speed, prev_img, image):
+    e = random.randint(0, 7)
+    img1 = None
+    img2 = None
+    if e == 0:
+        # print("flip")
+        img1 = cv2.flip(prev_img, 1)
+        img2 = cv2.flip(image, 1)
+    elif e == 1:
+        # print("random crop")
+        img1, img2 = getRandomCrop(prev_img, image, 240, 240)
+    elif e == 2:
+        # print("noise")
+        img1, img2 = colorJitter(prev_img, image)
+    elif e == 3:
+        img1, img2 = randomRotate(prev_img, image)
+    elif e == 4:
+        img1, img2 = colorJitter(prev_img, image)
+        img1, img2 = randomRotate(img1, img2)
+    elif e == 5:
+        img1, img2 = getRandomCrop(prev_img, image, 240, 240)
+        img1, img2 = randomRotate(img1, img2)
+    elif e == 6:
+        img1, img2 = colorJitter(prev_img, image)
+        img1, img2 = getRandomCrop(img1, img2, 240, 240)
+    elif e == 7:
+        img1, img2 = colorJitter(prev_img, image)
+        img1, img2 = getRandomCrop(img1, img2, 240, 240)
+        img1, img2 = randomRotate(img1, img2)
+        
+    writeData(speed, img1, img2)
+
+
 def dataGoBrrrr(extra,
                 txt_path="speedchallenge/data/train.txt",
                 vid_path="speedchallenge/data/train.mp4",
@@ -121,23 +155,15 @@ def dataGoBrrrr(extra,
                 # extra_const = extra
                 extra = extra * 5
 
+            procs = []
             for i in range(extra):
-                e = random.randint(0, 3)
-                img1 = None
-                img2 = None
-                if e == 0:
-                    # print("flip")
-                    img1 = cv2.flip(prev_img, 1)
-                    img2 = cv2.flip(image, 1)
-                elif e == 1:
-                    # print("random crop")
-                    img1, img2 = getRandomCrop(prev_img, image, 240, 240)
-                elif e == 2:
-                    # print("noise")
-                    img1, img2 = colorJitter(prev_img, image)
-                elif e == 3:
-                    img1, img2 = randomRotate(prev_img, image)
-                writeData(speed, img1, img2)
+                p = Process(target=smashData, args=(speed, prev_img, image))
+                p.start()
+                procs.append()
+
+            for p in procs:
+                p.join()
+                
 
 
 dataGoBrrrr(30)
