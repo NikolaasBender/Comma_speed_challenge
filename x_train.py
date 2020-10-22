@@ -17,7 +17,7 @@ import xception
 
 # PID 1987267
 
-BATCH_SIZE = 275
+BATCH_SIZE = 30
 
 txt_path="speedchallenge/data/train.txt"
 vid_path="speedchallenge/data/train.mp4"
@@ -40,7 +40,7 @@ device = torch.device("cuda" if use_cuda else "cpu")
 print(device)
 
 m = xception.xception(pretrained=False, device=device)
-optimizer = optim.Adadelta(m.parameters(), lr=1.0)
+optimizer = optim.AdamW(m.parameters(), lr=0.001)
 
 if torch.cuda.device_count() > 1:
     print("Let's use", torch.cuda.device_count(), "GPUs!")
@@ -60,7 +60,6 @@ for e in range(0, epochs):
     count = 0
     running_loss = 0.0
     for data in dataset_loader:
-        
         loss = None
         img1 = torch.transpose(data['img1'], 3, 1).cuda().float()
         img2 = torch.transpose(data['img2'], 3, 1).cuda().float()
@@ -68,7 +67,9 @@ for e in range(0, epochs):
         
         output = m(img1, img2)
         
-        loss = loser(output.squeeze(), data["speed"].cuda().float())
+        # loss = loser(output.squeeze(), data["speed"].cuda().float())
+        l = (output.squeeze() - data["speed"].cuda().float())**4
+        loss = sum(l) + max(l)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -86,7 +87,7 @@ for e in range(0, epochs):
                 100 * (count/(len(speed_dataset)//BATCH_SIZE)), "%")
             print('==============================================================')
             start = time.time()
-        
+    
 
     print("=====================saving===================")
     torch.save(m, str(e) + "_x_net.pth")
