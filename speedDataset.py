@@ -45,7 +45,7 @@ class ImageToSpeedDataset(Dataset):
                 prev_img, image = self.randomRotate(prev_img, image)
             elif r == 4:
                 prev_img = prev_img
-                image = image        
+                image = image
         return prev_img, image
 
     def __getitem__(self, idx):
@@ -57,7 +57,7 @@ class ImageToSpeedDataset(Dataset):
         img2_name = os.path.join(self.root_dir, img2_name)
         img1 = io.imread(img1_name)
         img2 = io.imread(img2_name)
-        # img1, img2 = self.smashData(img1, img2)
+        img1, img2 = self.smashData(img1, img2)
         sample = {'speed': speed, 'img1': img1, 'img2': img2}
 
         return sample
@@ -79,13 +79,17 @@ class ImageToSpeedDataset(Dataset):
         while success:
             success, image = vidcap.read()
             if success:
-                    # print("validating")
+                # print("validating")
                 speed = float(f.readline())
                 speed = torch.tensor(speed).cuda()
                 # print(speed)
-                out = m(torch.transpose(self.process(prev_img), 3, 1).cuda().float(), torch.transpose(self.process(image), 3, 1).cuda().float())
+                out = m(torch.transpose(self.process(prev_img), 3, 1).cuda().float(
+                ), torch.transpose(self.process(image), 3, 1).cuda().float())
                 # print(out)
                 loss += loser(out.squeeze(), speed).item()
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
         return loss
 
@@ -103,7 +107,6 @@ class ImageToSpeedDataset(Dataset):
 
         return crop1, crop2
 
-
     def randomRotate(self, img1, img2):
         h, w, c = img1.shape
         r = random.randint(0, 360)
@@ -113,7 +116,6 @@ class ImageToSpeedDataset(Dataset):
 
         return dst1, dst2
 
-
     def colorJitter(self, img1, img2):
         h, w, c = img1.shape
         noise = np.random.randint(0, 50, (h, w))  # design jitter/noise here
@@ -122,7 +124,6 @@ class ImageToSpeedDataset(Dataset):
         noise_added1 = cv2.add(img1, zitter)
         noise_added2 = cv2.add(img2, zitter)
         return noise_added1, noise_added2
-
 
     def process(self, img):
         img = cv2.resize(img, (240, 240))

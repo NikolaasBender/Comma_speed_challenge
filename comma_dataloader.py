@@ -144,23 +144,25 @@ def dataGoBrrrr(extra,
         success, image = vidcap.read()
         if success:
             speed = float(f.readline())
-            writeData(speed, prev_img, image, lock)
+            for i in range(extra):
+                writeData(speed, prev_img, image, lock)
+                
             if speed <= 3.0:
-                for i in range(5):
+                for i in range(extra//2):
                     writeData(speed, prev_img, image, lock)
 
-            if speed <= 3.0:
-                # extra_const = extra
-                extra = extra * 5
+            # if speed <= 3.0:
+            #     # extra_const = extra
+            #     extra = extra * 5
 
-            procs = []
-            for i in range(extra):
-                p = Process(target=smashData, args=(speed, prev_img, image, lock))
-                p.start()
-                procs.append(p)
+            # procs = []
+            # for i in range(extra):
+            #     p = Process(target=smashData, args=(speed, prev_img, image, lock))
+            #     p.start()
+            #     procs.append(p)
 
-            for p in procs:
-                p.join()
+            # for p in procs:
+            #     p.join()
                 
 
 start = time.time()
