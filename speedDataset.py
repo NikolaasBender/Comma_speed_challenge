@@ -28,7 +28,7 @@ class ImageToSpeedDataset(Dataset):
         e = random.randint(1, 7)
         randomlist = []
         for i in range(0, e):
-            n = random.randint(0,4)
+            n = random.randint(0, 4)
             randomlist.append(n)
         for r in randomlist:
             if r == 0:
@@ -45,7 +45,7 @@ class ImageToSpeedDataset(Dataset):
                 prev_img, image = self.randomRotate(prev_img, image)
             elif r == 4:
                 prev_img = prev_img
-                image = image     
+                image = image        
         return prev_img, image
 
     def __getitem__(self, idx):
@@ -57,7 +57,7 @@ class ImageToSpeedDataset(Dataset):
         img2_name = os.path.join(self.root_dir, img2_name)
         img1 = io.imread(img1_name)
         img2 = io.imread(img2_name)
-        img1, img2 = self.smashData(img1, img2)
+        # img1, img2 = self.smashData(img1, img2)
         sample = {'speed': speed, 'img1': img1, 'img2': img2}
 
         return sample
@@ -81,7 +81,7 @@ class ImageToSpeedDataset(Dataset):
             if success:
                     # print("validating")
                 speed = float(f.readline())
-                speed = torch.tensor([speed]).cuda()
+                speed = torch.tensor(speed).cuda()
                 # print(speed)
                 out = m(torch.transpose(self.process(prev_img), 3, 1).cuda().float(), torch.transpose(self.process(image), 3, 1).cuda().float())
                 # print(out)

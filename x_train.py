@@ -15,9 +15,9 @@ import logger
 import pathlib
 import xception
 
-# PID 
+# PID 747257
 
-BATCH_SIZE = 30
+BATCH_SIZE = 275
 
 txt_path="speedchallenge/data/train.txt"
 vid_path="speedchallenge/data/train.mp4"
@@ -60,31 +60,36 @@ for e in range(0, epochs):
     count = 0
     running_loss = 0.0
     for data in dataset_loader:
-        loss = None
-        img1 = torch.transpose(data['img1'], 3, 1).cuda().float()
-        img2 = torch.transpose(data['img2'], 3, 1).cuda().float()
-        # print(data['img1'].shape)
-        
-        output = m(img1, img2)
-        
-        loss = loser(output.squeeze(), data["speed"].cuda().float())
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        running_loss += float(loss.item())
+        c = 1
+        if data['speed'].item <= 3:
+            c = 5
 
-        count += 1
-        if count % 100 == 0:
-            d = time.time() - start
-            fps = (100 * BATCH_SIZE)/d
-            time_left = ((len(speed_dataset) - (count * BATCH_SIZE))/fps)/60
-            print(running_loss, "epoch loss\n",
-                  d/60, "min since last update\n",
-                  time_left, "min left\n",
-                  fps, "frames per second\n",
-                  100 * (count/(len(speed_dataset)//BATCH_SIZE)), "%")
-            print('==============================================================')
-            start = time.time()
+        for i in range(c):
+            loss = None
+            img1 = torch.transpose(data['img1'], 3, 1).cuda().float()
+            img2 = torch.transpose(data['img2'], 3, 1).cuda().float()
+            # print(data['img1'].shape)
+            
+            output = m(img1, img2)
+            
+            loss = loser(output.squeeze(), data["speed"].cuda().float())
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            running_loss += float(loss.item())
+
+            count += 1
+            if count % 10 == 0:
+                d = time.time() - start
+                fps = (10 * BATCH_SIZE)/d
+                time_left = ((len(speed_dataset) - (count * BATCH_SIZE))/fps)/60
+                print(running_loss, "epoch loss\n",
+                    d/60, "min since last update\n",
+                    time_left, "min left\n",
+                    fps, "frames per second\n",
+                    100 * (count/(len(speed_dataset)//BATCH_SIZE)), "%")
+                print('==============================================================')
+                start = time.time()
         
 
     print("=====================saving===================")
