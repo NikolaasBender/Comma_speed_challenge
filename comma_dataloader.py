@@ -104,7 +104,7 @@ def smashData(speed, prev_img, image, l):
     e = random.randint(1, 7)
     randomlist = []
     for i in range(0, e):
-        n = random.randint(0,3)
+        n = random.randint(0, 4)
         randomlist.append(n)
     for r in randomlist:
         if r == 0:
@@ -119,19 +119,9 @@ def smashData(speed, prev_img, image, l):
             prev_img, image = colorJitter(prev_img, image)
         elif r == 3:
             prev_img, image = randomRotate(prev_img, image)
-        # elif e == 4:
-        #     img1, img2 = colorJitter(prev_img, image)
-        #     img1, img2 = randomRotate(img1, img2)
-        # elif e == 5:
-        #     img1, img2 = getRandomCrop(prev_img, image, 240, 240)
-        #     img1, img2 = randomRotate(img1, img2)
-        # elif e == 6:
-        #     img1, img2 = colorJitter(prev_img, image)
-        #     img1, img2 = getRandomCrop(img1, img2, 240, 240)
-        # elif e == 7:
-        #     img1, img2 = colorJitter(prev_img, image)
-        #     img1, img2 = getRandomCrop(img1, img2, 240, 240)
-        #     img1, img2 = randomRotate(img1, img2)
+        elif r == 4:
+            prev_img = prev_img
+            image = image   
         
     writeData(speed, prev_img, image, l)
 
@@ -154,20 +144,21 @@ def dataGoBrrrr(extra,
         success, image = vidcap.read()
         if success:
             speed = float(f.readline())
+
             writeData(speed, prev_img, image, lock)
 
-            # if speed <= 3.0:
-            #     # extra_const = extra
-            #     extra = extra * 5
+            if speed <= 3.0:
+                # extra_const = extra
+                extra = extra * 5
 
-            # procs = []
-            # for i in range(extra):
-            #     p = Process(target=smashData, args=(speed, prev_img, image, lock))
-            #     p.start()
-            #     procs.append(p)
+            procs = []
+            for i in range(extra):
+                p = Process(target=smashData, args=(speed, prev_img, image, lock))
+                p.start()
+                procs.append(p)
 
-            # for p in procs:
-            #     p.join()
+            for p in procs:
+                p.join()
                 
 
 start = time.time()
