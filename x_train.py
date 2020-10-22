@@ -90,7 +90,6 @@ for e in range(0, epochs):
     print("=====================saving===================")
     torch.save(m, str(e) + "_x_net.pth")
     loss_history.append(running_loss)
-    print(loss_history)
     try:
         print('saving stuff')
         file_to_rem = pathlib.Path("full_data.pt")
@@ -108,11 +107,15 @@ for e in range(0, epochs):
         print("error saving all of the information")
 
     try:
-        m.eval()
-        error_in_val = speed_dataset.validate(m, loser)
-        m.train()
-        eval_history.append(error_in_val)
-        print('validation:', error_in_val)
+        if e%10 == 0:
+            m.eval()
+            error_in_val = speed_dataset.validate(m, loser)
+            m.train()
+            eval_history.append(error_in_val)
+            print('validation:', error_in_val)
     except:
         print('error in validation')
         eval_history.append(None)
+    
+    print('loss history:', loss_history)
+    print('eval history:', eval_history)

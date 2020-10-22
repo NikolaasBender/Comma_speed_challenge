@@ -28,7 +28,7 @@ class ImageToSpeedDataset(Dataset):
         e = random.randint(1, 7)
         randomlist = []
         for i in range(0, e):
-            n = random.randint(0,3)
+            n = random.randint(0,4)
             randomlist.append(n)
         for r in randomlist:
             if r == 0:
@@ -43,6 +43,9 @@ class ImageToSpeedDataset(Dataset):
                 prev_img, image = self.colorJitter(prev_img, image)
             elif r == 3:
                 prev_img, image = self.randomRotate(prev_img, image)
+            elif r == 4:
+                prev_img = prev_img
+                image = image     
         return prev_img, image
 
     def __getitem__(self, idx):

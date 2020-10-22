@@ -154,7 +154,11 @@ def dataGoBrrrr(extra,
         success, image = vidcap.read()
         if success:
             speed = float(f.readline())
+        
             writeData(speed, prev_img, image, lock)
+            if speed <= 3.0:
+                for i in range(5):
+                    writeData(speed, prev_img, image, lock)
 
             # if speed <= 3.0:
             #     # extra_const = extra
