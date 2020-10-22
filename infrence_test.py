@@ -40,7 +40,8 @@ thickness = 2
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 print(device)
-m = resnet_builds.resnet152(pretrained=True).to(device)
+m = xception(pretrained=True, device=device, path='64_x_net.pth')
+m.to(device)
 m.eval()
 
 vidcap = cv2.VideoCapture('/home/nick/projects/comma/speedchallenge/data/test.mp4')    

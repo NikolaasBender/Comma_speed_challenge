@@ -134,6 +134,7 @@ class Xception(nn.Module):
         self.bn4 = nn.BatchNorm2d(2048)
 
         self.fc = nn.Linear(2048, 1000)
+        self.fc0 = nn.Linear(1000, 1000)
         self.fc1 = nn.Linear(1000, 100)
         self.fc2 = nn.Linear(100, 1)
         self.fcb = nn.Linear(2049, 1)
@@ -190,6 +191,7 @@ class Xception(nn.Module):
         x = x.view(x.size(0), -1)
         # x = torch.cat((x, last_speed), dim=1)
         x = self.fc(x)
+        x = self.fc0(x)
         x = self.fc1(x)
         x = self.fc2(x)
         # x = self.fcb(x)
