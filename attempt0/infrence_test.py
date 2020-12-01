@@ -40,7 +40,7 @@ thickness = 2
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 print(device)
-m = xception(pretrained=True, device=device, path='64_x_net.pth')
+m = xception(pretrained=True, device=device, path='127_x_net.pth')
 m.to(device)
 m.eval()
 
