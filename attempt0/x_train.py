@@ -15,7 +15,7 @@ import logger
 import pathlib
 import xception
 
-# PID 747257
+# PID 1987267
 
 BATCH_SIZE = 30
 
@@ -110,9 +110,7 @@ for e in range(0, epochs):
 
     try:
         if e%10 == 0:
-            m.eval()
             error_in_val = speed_dataset.validate(m, loser)
-            m.train()
             eval_history.append(error_in_val)
             print('validation:', error_in_val)
     except:
